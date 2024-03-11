@@ -21,74 +21,109 @@ def dashboard(request):
         column_names = [column[0] for column in cursor.description]
         df = pd.DataFrame(rows, columns=column_names)
         
-        df_count = df.groupby('species').size().reset_index(name='count')
-        df_count = df_count.rename(columns={'species': 'Species', 'count': 'Count'})
-        df_count = df_count.set_index('Species')
+        plot = request.POST['graph']
         
-        plot = "bar"
+        print(plot)
         
         context = {
-            "plot" : None
+            "plot" : None,
+            "plot_title" : None
         }
         
-        #plot with plotly express with a bar chart the number of species per Location
-        
+
         if plot == 'bar':
             
-            fig = px.bar(df_count,
-                        x=df_count.index,
+            df_family = df.groupby('family').size().reset_index(name='Count')
+            
+            fig = px.bar(df_family,
+                        x="family",
                         y='Count',
-                        title=f'Count of Species by Location')
+                        title=f'Conteo de registros por familia')
             
             fig.update_layout(
                     font=dict(size=13, family="Lato"),
-                    title_font=dict(size=20),
+                    title_font=dict(size=22),
                     title_y=0.93,
-                    plot_bgcolor="#212121",
-                    paper_bgcolor="#212121",
-                    font_color="white",
+                    plot_bgcolor="#fbfaf5",
+                    paper_bgcolor="#fbfaf5",
+                    font_color="#333",
                     width=1000,
                     height=470,
                 )
             
             fig.update_xaxes(
-                    tickangle=35,
-                    title_text="Location",
+                    tickangle=90,
+                    title_text="Familia",
                     tickmode="linear",
-                    gridcolor="#424242",
+                    gridcolor="#9A9A9A",
+                    showgrid=False,
                 )
 
             fig.update_yaxes(
-                title_text="Species",
+                title_text="Registros",
                 showgrid=True,
-                gridcolor="#424242",
+                gridcolor="#9A9A9A",
             )
             
-            context["plot_map"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot_title"] = "Barras"
         
-        if plot == 'map':
+        if plot == 'pie':
             
-            df_map = df.groupby(['Latitude', 'Longitude', 'species']).size().reset_index(name='count')
-            df_map = df_map.rename(columns={'Latitude': 'Latitude', 'Longitude': 'Longitude', 'species': 'Species', 'count': 'Count'})
-            fig = px.scatter_mapbox(df_map, lat="Latitude", lon="Longitude", color="Species", size="Count", zoom=3, height=470)
+            df_count = df.groupby('conservation_status').size().reset_index(name='count')
+            
+            fig = px.pie(df_count, values=df_count.index, names='conservation_status', title='Recuento de Conservaciones')
             fig.update_layout(
-                mapbox_style="open-street-map",
-                margin={"r":0,"t":0,"l":0,"b":0},
                 font=dict(size=13, family="Lato"),
                 title_font=dict(size=20),
                 title_y=0.93,
-                plot_bgcolor="#212121",
-                paper_bgcolor="#212121",
-                font_color="white",
+                    plot_bgcolor="#fbfaf5",
+                    paper_bgcolor="#fbfaf5",
+                    font_color="#333",
                 width=1000,
                 height=470,
             )
             
-            context["plot_map"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot_title"] = "Pie"
+      
+        if plot == 'bubble' :
+            
+            df_bubble = df.groupby('family').size().reset_index(name='count')
+            
+            fig = px.scatter(df_bubble, x='family', y='count', color='family', size='count', title='Recuento de Animales')
+            fig.update_layout(
+                font=dict(size=13, family="Lato"),
+                title_font=dict(size=20),
+                title_y=0.93,
+                    plot_bgcolor="#fbfaf5",
+                    paper_bgcolor="#fbfaf5",
+                    font_color="#333",
+                width=1000,
+                height=470,
+            )
+            
+            context["plot"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot_title"] = "Bubble"
+        
+        if plot == 'histogram':
+            
+            fig = px.histogram(df, x='countries', title='Countries Histogram')
+            fig.update_layout(
+                font=dict(size=13, family="Lato"),
+                title_font=dict(size=20),
+                title_y=0.93,
+                    plot_bgcolor="#fbfaf5",
+                    paper_bgcolor="#fbfaf5",
+                    font_color="#333",
+                width=1000,
+                height=470,
+            )
+            
+            context["plot"] = fig.to_html(full_html=False, default_height=800, default_width=1000)
+            context["plot_title"] = "Histograma"
         
         return render(request, 'index.html', context=context)
-    
-    
     
     return render(request, 'index.html')
     
