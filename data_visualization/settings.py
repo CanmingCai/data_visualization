@@ -138,4 +138,4 @@ STORAGES = {
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-CSRF_TRUSTED_ORIGINS = ['https://team5django.azurewebsites.net/']
+CSRF_TRUSTED_ORIGINS = ['https://team5django.azurewebsites.net']
